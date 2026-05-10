@@ -6,9 +6,17 @@ export default function AutoFix({
   onCopy,
   onDownload,
   downloadLabel,
+  inputMode,
   canImprove,
   isLoading,
 }) {
+  const modeGuidance = {
+    text: 'テキスト入力タブでは、修正後テキストをそのままコピーできます。',
+    html: 'HTMLファイルタブでは、画像・表・head/style/scriptを保持したHTMLとしてダウンロードできます。',
+    pdf: 'PDFファイルタブでは、修正後の本文をプレーンテキストファイルとしてダウンロードできます。',
+  };
+  const shouldShowDownload = inputMode === 'html' || inputMode === 'pdf';
+
   return (
     <section className="rounded-3xl border border-slate-700 bg-[#1e293b]/95 p-5 shadow-2xl shadow-slate-950/30 md:p-7">
       <div className="mb-5 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
@@ -46,16 +54,21 @@ export default function AutoFix({
               >
                 コピー
               </button>
-              <button
-                className="rounded-xl border border-emerald-400/40 px-3 py-2 text-sm font-semibold text-emerald-200 transition hover:bg-emerald-400/10 disabled:cursor-not-allowed disabled:opacity-50"
-                type="button"
-                onClick={onDownload}
-                disabled={!improvedArticle}
-              >
-                {downloadLabel || 'ダウンロード'}
-              </button>
+              {shouldShowDownload && (
+                <button
+                  className="rounded-xl border border-emerald-400/40 px-3 py-2 text-sm font-semibold text-emerald-200 transition hover:bg-emerald-400/10 disabled:cursor-not-allowed disabled:opacity-50"
+                  type="button"
+                  onClick={onDownload}
+                  disabled={!improvedArticle}
+                >
+                  {downloadLabel || 'ダウンロード'}
+                </button>
+              )}
             </div>
           </div>
+          <p className="mb-3 rounded-xl bg-slate-900/70 px-3 py-2 text-sm text-slate-400">
+            {modeGuidance[inputMode] || modeGuidance.text}
+          </p>
           <div className="max-h-[34rem] overflow-auto whitespace-pre-wrap leading-7 text-slate-300">
             {improvedArticle || 'AI修正後の記事がここに表示されます。'}
           </div>

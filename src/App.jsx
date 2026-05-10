@@ -80,12 +80,7 @@ export default function App() {
       };
     }
 
-    return {
-      content: improvedArticle,
-      fileName: 'improved-article.txt',
-      mimeType: 'text/plain;charset=utf-8',
-      label: 'テキストをダウンロード',
-    };
+    return null;
   }, [htmlFileName, htmlSource, improvedArticle, inputMode, pdfFileName]);
 
   function resetResultForNewInput() {
@@ -271,6 +266,7 @@ export default function App() {
           onCopy={handleCopy}
           onDownload={handleDownloadImproved}
           downloadLabel={improvedDownload?.label}
+          inputMode={inputMode}
           canImprove={Boolean(scoringResult && article.trim())}
           isLoading={isLoading}
         />
