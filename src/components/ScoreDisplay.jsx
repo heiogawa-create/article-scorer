@@ -1,4 +1,4 @@
-const scoreItems = [
+const SCORE_ITEMS = [
   { key: 'hook', label: 'タイトル・冒頭フック力' },
   { key: 'depth', label: '情報の深さ・専門性' },
   { key: 'readability', label: '読みやすさ・構成' },
@@ -7,66 +7,76 @@ const scoreItems = [
   { key: 'cta', label: 'CTA・購買促進力' },
 ];
 
-function getScoreColor(score) {
-  const percent = score * 5;
-
-  if (percent >= 80) {
-    return 'bg-emerald-400';
-  }
-
-  if (percent >= 60) {
-    return 'bg-amber-300';
-  }
-
+function getBarColor(score) {
+  if (score >= 17) return 'bg-emerald-400';
+  if (score >= 13) return 'bg-yellow-400';
   return 'bg-rose-400';
+}
+
+function getSalesBanner(total) {
+  if (total >= 110) return { emoji: '🔥', text: 'バズり候補！今すぐ公開してください', bg: 'bg-rose-500/20 border-rose-400/40 text-rose-100' };
+  if (total >= 100) return { emoji: '⭐', text: '売れやすい記事です！公開推奨', bg: 'bg-emerald-500/20 border-emerald-400/40 text-emerald-100' };
+  if (total >= 85) return { emoji: '📈', text: 'もう少し！自動修正で100点超えを狙いましょう', bg: 'bg-yellow-500/20 border-yellow-400/40 text-yellow-100' };
+  if (total >= 70) return { emoji: '✏️', text: '改善が必要です。自動修正を試してください', bg: 'bg-orange-500/20 border-orange-400/40 text-orange-100' };
+  return { emoji: '⚠️', text: '大幅な見直しが必要です', bg: 'bg-slate-500/20 border-slate-400/40 text-slate-100' };
 }
 
 export default function ScoreDisplay({ result }) {
   if (!result) {
     return (
-      <section className="rounded-3xl border border-dashed border-slate-700 bg-[#1e293b]/60 p-8 text-center text-slate-400">
-        採点結果がここに表示されます。
-      </section>
+      <div className="rounded-[2rem] border border-slate-700 bg-[#1e293b]/90 p-6 shadow-xl md:p-8">
+        <h2 className="text-xl font-black text-white mb-4">採点結果</h2>
+        <p className="text-slate-400">記事を入力して採点ボタンを押してください。</p>
+      </div>
     );
   }
 
+  const { scores, total, feedback, summary } = result;
+  const banner = getSalesBanner(total);
+
   return (
-    <section className="rounded-3xl border border-slate-700 bg-[#1e293b]/95 p-5 shadow-2xl shadow-slate-950/30 md:p-7">
-      <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div>
-          <p className="text-sm font-semibold text-cyan-300">Score Result</p>
-          <h2 className="text-2xl font-bold text-white">採点結果</h2>
-        </div>
-        <div className="rounded-3xl border border-cyan-400/30 bg-slate-950/80 px-7 py-5 text-center">
-          <p className="text-sm text-slate-400">合計スコア</p>
-          <p className="text-5xl font-black text-cyan-300">{result.total}</p>
-          <p className="text-sm text-slate-500">/ 100</p>
-        </div>
+    <div className="rounded-[2rem] border border-slate-700 bg-[#1e293b]/90 p-6 shadow-xl md:p-8 space-y-6">
+      <h2 className="text-xl font-black text-white">採点結果</h2>
+
+      <div className="text-center">
+        <div className="text-7xl font-black text-white">{total}</div>
+        <div className="text-slate-400 text-sm mt-1">満点：120点 ｜ 売れる目安：100点以上</div>
       </div>
 
-      <p className="mb-6 rounded-2xl bg-slate-900/70 p-4 leading-7 text-slate-200">{result.summary}</p>
+      <div className={`rounded-2xl border p-4 text-center font-bold ${banner.bg}`}>
+        {banner.emoji} {banner.text}
+      </div>
 
-      <div className="space-y-5">
-        {scoreItems.map((item) => {
-          const score = Number(result.scores?.[item.key] ?? 0);
-          const percent = Math.min(Math.max(score * 5, 0), 100);
-
+      <div className="space-y-4">
+        {SCORE_ITEMS.map(({ key, label }) => {
+          const score = scores?.[key] ?? 0;
+          const pct = (score / 20) * 100;
           return (
-            <article key={item.key} className="rounded-2xl border border-slate-700 bg-slate-900/50 p-4">
-              <div className="mb-3 flex items-center justify-between gap-3">
-                <h3 className="font-bold text-white">{item.label}</h3>
-                <span className="shrink-0 rounded-full bg-slate-800 px-3 py-1 text-sm font-bold text-slate-200">
-                  {score} / 20
-                </span>
+            <div key={key}>
+              <div className="flex justify-between text-sm mb-1">
+                <span className="text-slate-300">{label}</span>
+                <span className="font-bold text-white">{score} / 20</span>
               </div>
-              <div className="h-3 overflow-hidden rounded-full bg-slate-800">
-                <div className={`h-full rounded-full ${getScoreColor(score)}`} style={{ width: `${percent}%` }} />
+              <div className="h-2 rounded-full bg-slate-700">
+                <div
+                  className={`h-2 rounded-full transition-all duration-700 ${getBarColor(score)}`}
+                  style={{ width: `${pct}%` }}
+                />
               </div>
-              <p className="mt-3 leading-7 text-slate-300">{result.feedback?.[item.key]}</p>
-            </article>
+              {feedback?.[key] && (
+                <p className="mt-1 text-xs text-slate-400">{feedback[key]}</p>
+              )}
+            </div>
           );
         })}
       </div>
-    </section>
+
+      {summary && (
+        <div className="rounded-2xl bg-slate-800/60 p-4">
+          <p className="text-sm font-bold text-slate-200 mb-1">総合コメント</p>
+          <p className="text-sm text-slate-300 leading-6">{summary}</p>
+        </div>
+      )}
+    </div>
   );
 }
